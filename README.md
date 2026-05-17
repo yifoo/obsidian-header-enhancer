@@ -60,9 +60,9 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
 
 2. **Start Using**
    - Press `Enter` on a header line (e.g., `## Header`)
-   - Plugin automatically adds numbering (e.g., `## 1. Header`)
+   - Plugin automatically adds numbering (e.g., `## 1.Header`)
    - Sub-headers get hierarchical numbers (1.1, 1.1.1, etc.)
-   - Chinese start-level headers can be numbered as `## 一、标题`, with the next level numbered as `### 1. 子标题`
+   - Chinese start-level headers can be numbered as `## 一、标题`, with the next level numbered as `### 1.子标题`
 
 ### Dual-Level Control System
 
@@ -83,9 +83,9 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
 - **Start Level**: Which header level to begin numbering (default: H2, so H1 is preserved as the document title)
 - **End Level**: Which header level to stop numbering
 - **Auto Detection**: Automatically detect header levels in document while respecting the configured start level
-- **Separator**: Number separator, supports `.` (1.1), `-` (1-1), `/` (1/1), `,` (1,1). Start-level numeric headings include the separator, e.g. `1. Header`.
+- **Separator**: Number separator, supports `.` (1.1), `-` (1-1), `/` (1/1), `,` (1,1). Start-level numeric headings include the separator and attach directly to the heading text, e.g. `1.Header`.
 - **Start Number**: First header number (default: 1)
-- **Chinese Header Numbering**: When enabled, Chinese start-level headings use `一、二、三、`; the next level uses numeric numbering such as `1.`, and deeper levels keep hierarchical numeric numbering such as `1.1`.
+- **Chinese Header Numbering**: When enabled, Chinese start-level headings use `一、二、三、`; the next level uses numeric numbering attached directly to the heading text such as `1.Subtitle`, and deeper levels keep hierarchical numeric numbering such as `1.1 Subtitle`.
 
 **Font Customization**
 - **Header Fonts**: Control Markdown headers (#, ##, ###) font family/size
@@ -155,7 +155,7 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
 - 📝 Daily notes: Global on, disable individual files with YAML
 - 📚 Knowledge management: Use different separators for different doc types
 - 🎯 Project docs: Start from H2, preserve H1 as document title
-- 中文文档: Enable Chinese header numbering to generate `一、章节`, `1. 小节`, `1.1 条目`
+- 中文文档: Enable Chinese header numbering to generate `一、章节`, `1.小节`, `1.1 条目`
 
 ### Build Output
 
@@ -186,7 +186,7 @@ Report bugs at [GitHub Issues](https://github.com/HoBeedzc/obsidian-header-enhan
 - Improved overall stability and user experience
 - Default numbering start level changed to H2
 - Added Chinese header numbering setting (`一、二、三、` for start-level Chinese headings)
-- Start-level numeric headings now include the configured number separator, e.g. `1. Header`
+- Start-level numeric headings now include the configured number separator and attach directly to the heading text, e.g. `1.Header`
 - Build output now goes to `dist/`
 
 ### v0.5.0
