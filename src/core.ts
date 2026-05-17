@@ -50,9 +50,15 @@ function toChineseNumber(num: number): string {
 export function formatHeaderNumber(
 	cntNums: number[],
 	separator: string,
-	headerText: string
+	headerText: string,
+	isStartLevel: boolean,
+	enableChineseHeaderNumbering: boolean
 ): string {
-	if (cntNums.length === 1 && hasChineseText(headerText)) {
+	if (!enableChineseHeaderNumbering) {
+		return cntNums.join(separator);
+	}
+
+	if (isStartLevel && hasChineseText(headerText)) {
 		return toChineseNumber(cntNums[0]) + "、";
 	}
 

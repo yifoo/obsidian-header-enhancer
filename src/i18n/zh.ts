@@ -71,6 +71,10 @@ export default {
                 desc: "数字和标题文本之间的分隔符",
                 error: "无效的标题分隔符"
             },
+            chineseHeaderNumbering: {
+                name: "启用中文标题编号",
+                desc: "中文起始标题使用“一、二、三、……”编号，下一级标题使用“1、2、3、……”编号。"
+            },
             updateBacklinks: {
                 name: "更新反向链接",
                 desc: "⚠️ 警告：当标题改变时自动更新反向链接。在大型知识库中可能会影响性能。"

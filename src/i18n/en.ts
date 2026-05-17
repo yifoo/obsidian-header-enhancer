@@ -69,6 +69,10 @@ export default {
                 desc: "Separator between header number and text",
                 error: "You can't change header separator when auto numbering is enabled"
             },
+            chineseHeaderNumbering: {
+                name: "Enable Chinese Header Numbering",
+                desc: "Use Chinese numerals like 一、二、三、 for Chinese start-level headers, and 1, 2, 3 for the next level."
+            },
             updateBacklinks: {
                 name: "Update Backlinks",
                 desc: "⚠️ Warning: Automatically update backlinks when headers change. May impact performance in large vaults."

@@ -1,7 +1,7 @@
-import { App, PluginSettingTab, Setting, Notice, MarkdownView } from "obsidian";
-import HeaderEnhancerPlugin from "./main";
-import { I18n } from './i18n';
+import { App, MarkdownView, Notice, PluginSettingTab, Setting } from "obsidian";
 import { analyzeHeaderLevels } from './core';
+import { I18n } from './i18n';
+import HeaderEnhancerPlugin from "./main";
 
 export enum AutoNumberingMode {
 	OFF = "off",
@@ -25,6 +25,7 @@ export interface HeaderEnhancerSettings {
 	autoNumberingStartNumber: string;
 	autoNumberingSeparator: string;
 	autoNumberingHeaderSeparator: string;
+	enableChineseHeaderNumbering: boolean;
 	updateBacklinks: boolean;
 	// YAML mode specific settings
 	yamlFallbackMode: YamlFallbackMode;
@@ -57,6 +58,7 @@ export const DEFAULT_SETTINGS: HeaderEnhancerSettings = {
 	autoNumberingStartNumber: "1",
 	autoNumberingSeparator: ".",
 	autoNumberingHeaderSeparator: "\t",
+	enableChineseHeaderNumbering: true,
 	updateBacklinks: false,
 	// YAML mode specific settings
 	yamlFallbackMode: YamlFallbackMode.USE_DEFAULT,
@@ -402,22 +404,24 @@ export class HeaderEnhancerSettingTab extends PluginSettingTab {
 		// More Information Section
 		containerEl.createEl("h2", { text: i18n.t("settings.moreInfo") });
 		containerEl.createEl("p", { text: i18n.t("settings.author") }).createEl("a", {
-			text: "Hobee Liu",
-			href: "https://github.com/HoBeedzc",
+			text: "yifoo",
+			href: "https://github.com/yifoo",
 		});
 		containerEl.createEl("p", { text: i18n.t("settings.license") }).createEl("a", {
 			text: "MIT",
 			href: "https://github.com/HoBeedzc/obsidian-header-enhancer-plugin/blob/master/LICENSE",
 		});
-		containerEl.createEl("p", { text: i18n.t("settings.githubRepo") }).createEl("a", {
-			text: "obsidian-header-enhancer",
-			href: "https://github.com/HoBeedzc/obsidian-header-enhancer-plugin",
-		});
+		containerEl
+			.createEl("p", { text: i18n.t("settings.githubRepo") })
+			.createEl("a", {
+				text: "obsidian-header-enhancer",
+				href: "https://github.com/yifoo/obsidian-header-enhancer",
+			});
 		containerEl
 			.createEl("p", { text: i18n.t("settings.anyQuestion") })
 			.createEl("a", {
 				text: "Github Issues",
-				href: "https://github.com/HoBeedzc/obsidian-header-enhancer-plugin/issues",
+				href: "https://github.com/yifoo/obsidian-header-enhancer/issues",
 			});
 	}
 
@@ -597,6 +601,19 @@ export class HeaderEnhancerSettingTab extends PluginSettingTab {
 					this.plugin.settings.autoNumberingHeaderSeparator = value;
 					await this.plugin.saveSettings();
 				});
+			});
+
+		new Setting(containerEl)
+			.setName(i18n.t("settings.autoNumbering.chineseHeaderNumbering.name"))
+			.setDesc(i18n.t("settings.autoNumbering.chineseHeaderNumbering.desc"))
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableChineseHeaderNumbering)
+					.onChange(async (value) => {
+						this.plugin.settings.enableChineseHeaderNumbering = value;
+						await this.plugin.saveSettings();
+						this.updateFormatPreview();
+					});
 			});
 
 		new Setting(containerEl)

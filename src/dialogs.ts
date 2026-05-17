@@ -560,7 +560,9 @@ export class AutoNumberingActivationDialog extends Modal {
                     const insertNumberStr = formatHeaderNumber(
                         insertNumber,
                         config.separator,
-                        originalHeading
+                        originalHeading,
+                        headerLevel === config.startLevel,
+                        this.plugin.settings.enableChineseHeaderNumbering
                     );
                     
                     const newLine = replaceHeaderNumber(

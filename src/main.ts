@@ -254,14 +254,15 @@ export default class HeaderEnhancerPlugin extends Plugin {
 	}
 
 	async loadSettings() {
+		const savedSettings = await this.loadData();
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			await this.loadData()
+			savedSettings
 		);
 		
 		// Backward compatibility migration
-		this.migrateSettings();
+		this.migrateSettings(savedSettings);
 		
 		// Load per-document states from JSON string
 		try {
@@ -278,11 +279,17 @@ export default class HeaderEnhancerPlugin extends Plugin {
 	/**
 	 * Migrate settings for backward compatibility
 	 */
-	private migrateSettings() {
+	private migrateSettings(savedSettings: Partial<HeaderEnhancerSettings> | null) {
 		// If globalAutoNumberingEnabled is undefined (old version), set it based on current mode
 		if (this.settings.globalAutoNumberingEnabled === undefined) {
 			// Enable global toggle if mode is not OFF
 			this.settings.globalAutoNumberingEnabled = this.settings.autoNumberingMode !== AutoNumberingMode.OFF;
+		}
+
+		// v0.5.2 changes the default numbering start level from H1 to H2.
+		// Existing users who only inherited the old default had H1 persisted in data.json.
+		if (!savedSettings || savedSettings.startHeaderLevel === undefined || savedSettings.startHeaderLevel === 1) {
+			this.settings.startHeaderLevel = DEFAULT_SETTINGS.startHeaderLevel;
 		}
 		
 		// Initialize perDocumentStates if undefined
@@ -517,7 +524,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 				}
 
 				if (isHeader(line)) {
-					const [headerLevel] = getHeaderLevel(
+					const [headerLevel, realHeaderLevel] = getHeaderLevel(
 						line,
 						config.startLevel
 					);
@@ -532,7 +539,9 @@ export default class HeaderEnhancerPlugin extends Plugin {
 					const insertNumberStr = formatHeaderNumber(
 						insertNumber,
 						config.separator,
-						originalHeading
+						originalHeading,
+						realHeaderLevel === config.startLevel,
+						this.settings.enableChineseHeaderNumbering
 					);
 					const newLine = replaceHeaderNumber(
 						line,

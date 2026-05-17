@@ -50,7 +50,7 @@ export function getAutoNumberingConfig(
 		const analysis = analyzeHeaderLevels(content);
 		
 		if (!analysis.isEmpty) {
-			config.startLevel = analysis.minLevel;
+			config.startLevel = Math.max(analysis.minLevel, setting.startHeaderLevel);
 			config.endLevel = analysis.maxLevel;
 		}
 		// 如果文档无标题，保持默认配置
