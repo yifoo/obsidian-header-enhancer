@@ -546,7 +546,8 @@ export default class HeaderEnhancerPlugin extends Plugin {
 					const newLine = replaceHeaderNumber(
 						line,
 						insertNumberStr,
-						this.settings.autoNumberingHeaderSeparator
+						this.settings.autoNumberingHeaderSeparator,
+						insertNumberStr.endsWith(config.separator)
 					);
 
 					// Record header changes for backlink updates

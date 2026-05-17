@@ -7,16 +7,18 @@
 
 A powerful Obsidian plugin that enhances markdown headers with automatic numbering, intelligent backlink management, and custom fonts.
 
-**Current Version**: 0.5.1
+**Current Version**: 0.5.2
 
 ## ✨ Features
 
 ### 🔢 Smart Auto Numbering
-Automatically adds hierarchical numbering (1.1, 1.2, 2.1) with real-time updates.
+Automatically adds hierarchical numbering (1., 1.1, 2., 2.1) with real-time updates.
 
 - Global & per-document control with master switch
 - Auto header level detection and configurable separators (`.`, `-`, `/`, `,`)
-- Flexible start levels (H1-H6) and YAML frontmatter override
+- Default numbering starts from H2, preserving H1 as the document title
+- Chinese start-level headers can use Chinese numerals (`一、二、三、`) while sub-headers use numeric numbering (`1.`, `1.1`)
+- Flexible start levels (H1-H6), Chinese numbering toggle, and YAML frontmatter override
 - Bulk operations across entire vault with confirmation dialogs
 
 ![header-auto-numbering-example](./doc/img/header-auto-numbering-example.gif)
@@ -60,6 +62,7 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
    - Press `Enter` on a header line (e.g., `## Header`)
    - Plugin automatically adds numbering (e.g., `## 1. Header`)
    - Sub-headers get hierarchical numbers (1.1, 1.1.1, etc.)
+   - Chinese start-level headers can be numbered as `## 一、标题`, with the next level numbered as `### 1. 子标题`
 
 ### Dual-Level Control System
 
@@ -77,11 +80,12 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
 ### Settings Explained
 
 **Numbering Configuration**
-- **Start Level**: Which header level to begin numbering (e.g., start from H2, skip H1)
+- **Start Level**: Which header level to begin numbering (default: H2, so H1 is preserved as the document title)
 - **End Level**: Which header level to stop numbering
-- **Auto Detection**: Automatically detect header levels in document
-- **Separator**: Number separator, supports `.` (1.1), `-` (1-1), `/` (1/1), `,` (1,1)
+- **Auto Detection**: Automatically detect header levels in document while respecting the configured start level
+- **Separator**: Number separator, supports `.` (1.1), `-` (1-1), `/` (1/1), `,` (1,1). Start-level numeric headings include the separator, e.g. `1. Header`.
 - **Start Number**: First header number (default: 1)
+- **Chinese Header Numbering**: When enabled, Chinese start-level headings use `一、二、三、`; the next level uses numeric numbering such as `1.`, and deeper levels keep hierarchical numeric numbering such as `1.1`.
 
 **Font Customization**
 - **Header Fonts**: Control Markdown headers (#, ##, ###) font family/size
@@ -151,6 +155,21 @@ header-auto-numbering: ["state on", "start-level h2", "end-level h6", "start-at 
 - 📝 Daily notes: Global on, disable individual files with YAML
 - 📚 Knowledge management: Use different separators for different doc types
 - 🎯 Project docs: Start from H2, preserve H1 as document title
+- 中文文档: Enable Chinese header numbering to generate `一、章节`, `1. 小节`, `1.1 条目`
+
+### Build Output
+
+Run the production build with:
+
+```bash
+pnpm build
+```
+
+The compiled plugin files are written to `dist/`:
+
+- `dist/main.js`
+- `dist/manifest.json`
+- `dist/styles.css`
 
 ## 🐛 Known Issues
 - Manual refresh needed when changing header levels (press `Enter`)
@@ -160,11 +179,15 @@ Report bugs at [GitHub Issues](https://github.com/HoBeedzc/obsidian-header-enhan
 
 ## 📊 Changelog
 
-### v0.5.1 (Current)
+### v0.5.2 (Current)
 **Bug Fixes and Improvements**
 - Fixed Enter key behavior for automatic header numbering
 - Fixed YAML state synchronization with document toggle button
 - Improved overall stability and user experience
+- Default numbering start level changed to H2
+- Added Chinese header numbering setting (`一、二、三、` for start-level Chinese headings)
+- Start-level numeric headings now include the configured number separator, e.g. `1. Header`
+- Build output now goes to `dist/`
 
 ### v0.5.0
 **Major YAML Mode Improvements**

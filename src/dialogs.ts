@@ -568,7 +568,8 @@ export class AutoNumberingActivationDialog extends Modal {
                     const newLine = replaceHeaderNumber(
                         line,
                         insertNumberStr,
-                        this.plugin.settings.autoNumberingHeaderSeparator
+                        this.plugin.settings.autoNumberingHeaderSeparator,
+                        insertNumberStr.endsWith(config.separator)
                     );
                     
                     if (newLine !== line) {

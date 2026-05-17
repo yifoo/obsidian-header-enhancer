@@ -62,8 +62,14 @@ export function formatHeaderNumber(
 		return toChineseNumber(cntNums[0]) + "、";
 	}
 
+	if (isStartLevel) {
+		return cntNums.join(separator) + separator;
+	}
+
 	if (hasChineseText(headerText)) {
-		return cntNums.slice(1).join(separator);
+		const chineseSubNumbers = cntNums.slice(1);
+		const subNumber = chineseSubNumbers.join(separator);
+		return chineseSubNumbers.length === 1 ? subNumber + separator : subNumber;
 	}
 
 	return cntNums.join(separator);
@@ -137,7 +143,8 @@ export function getHeadingTextWithoutNumber(text: string): string | null {
 export function replaceHeaderNumber(
 	text: string,
 	nextNumsStr: string,
-	splitor: string
+	_splitor: string,
+	removeSpaceBeforeHeader: boolean = false
 ): string {
 	const match = text.match(/^(#{1,6})\s+(.*)/);
 	if (!match) return text;
@@ -147,7 +154,10 @@ export function replaceHeaderNumber(
 	if (nextNumsStr.endsWith("、")) {
 		return sharp + " " + nextNumsStr + header;
 	}
-	return sharp + " " + nextNumsStr + splitor + header;
+	if (removeSpaceBeforeHeader) {
+		return sharp + " " + nextNumsStr + header;
+	}
+	return sharp + " " + nextNumsStr + " " + header;
 }
 
 export function removeHeaderNumber(text: string, splitor: string): string {

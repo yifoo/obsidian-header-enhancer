@@ -1,7 +1,7 @@
 {
 	"id": "super-header-enhancer",
 	"name": "Super Header Enhancer",
-	"version": "1.0.0",
+	"version": "0.5.2",
 	"minAppVersion": "0.14.0",
 	"description": "标题增强插件",
 	"author": "yifoo",
