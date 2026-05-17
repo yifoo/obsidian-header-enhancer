@@ -1,7 +1,7 @@
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import HeaderEnhancerPlugin from "./main";
 import { I18n } from "./i18n";
-import { removeHeaderNumber, isHeader, getNextNumber } from "./core";
+import { removeHeaderNumber, isHeader, getNextNumber, replaceHeaderNumber, getHeadingTextWithoutNumber, formatHeaderNumber } from "./core";
 import { getAutoNumberingConfig } from "./config";
 
 export class AutoNumberingRemovalDialog extends Modal {
@@ -553,20 +553,25 @@ export class AutoNumberingActivationDialog extends Modal {
                     
                     const adjustedLevel = headerLevel - config.startLevel + 1;
                     insertNumber = getNextNumber(insertNumber, adjustedLevel);
-                    const insertNumberStr = insertNumber.join(config.separator);
+                    const originalHeading = getHeadingTextWithoutNumber(line);
+                    if (!originalHeading) {
+                        continue;
+                    }
+                    const insertNumberStr = formatHeaderNumber(
+                        insertNumber,
+                        config.separator,
+                        originalHeading
+                    );
                     
-                    // Check if header needs numbering
-                    if (!line.includes(this.plugin.settings.autoNumberingHeaderSeparator)) {
-                        const newLine = "#".repeat(headerLevel) +
-                            " " +
-                            insertNumberStr +
-                            this.plugin.settings.autoNumberingHeaderSeparator +
-                            line.substring(headerLevel + 1);
-                        
-                        if (newLine !== line) {
-                            lines[i] = newLine;
-                            modified = true;
-                        }
+                    const newLine = replaceHeaderNumber(
+                        line,
+                        insertNumberStr,
+                        this.plugin.settings.autoNumberingHeaderSeparator
+                    );
+                    
+                    if (newLine !== line) {
+                        lines[i] = newLine;
+                        modified = true;
                     }
                 }
             }

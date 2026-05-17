@@ -3,11 +3,12 @@ import { Editor, MarkdownView, Notice, Plugin, TFile } from "obsidian";
 import {
 	getHeaderLevel,
 	getNextNumber,
-	isNeedUpdateNumber,
-	isNeedInsertNumber,
 	removeHeaderNumber,
 	isHeader,
 	analyzeHeaderLevels,
+	getHeadingTextWithoutNumber,
+	replaceHeaderNumber,
+	formatHeaderNumber,
 } from "./core";
 import { getAutoNumberingYaml, setAutoNumberingYaml } from "./utils";
 import {
@@ -516,7 +517,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 				}
 
 				if (isHeader(line)) {
-					const [headerLevel, realHeaderLevel] = getHeaderLevel(
+					const [headerLevel] = getHeaderLevel(
 						line,
 						config.startLevel
 					);
@@ -524,48 +525,20 @@ export default class HeaderEnhancerPlugin extends Plugin {
 						continue;
 					}
 					insertNumber = getNextNumber(insertNumber, headerLevel);
-					const insertNumberStr = insertNumber.join(config.separator);
-					
-					let newLine: string | null = null;
-					let originalHeading: string | null = null;
-					
-					if (
-						isNeedInsertNumber(
-							line,
-							this.settings.autoNumberingHeaderSeparator
-						)
-					) {
-						// Add numbering to header - extract original title
-						originalHeading = line.substring(realHeaderLevel + 1).trim();
-						
-						newLine = "#".repeat(realHeaderLevel) +
-							" " +
-							insertNumberStr +
-							this.settings.autoNumberingHeaderSeparator +
-							line.substring(realHeaderLevel + 1);
-					} else if (
-						isNeedUpdateNumber(
-							insertNumberStr,
-							line,
-							this.settings.autoNumberingHeaderSeparator
-						)
-					) {
-						// Update existing numbering - extract title after separator
-						const textAfterSeparator = line.split(this.settings.autoNumberingHeaderSeparator)[1];
-						originalHeading = textAfterSeparator ? textAfterSeparator.trim() : null;
-						
-						const originNumberLength = line
-							.split(
-								this.settings.autoNumberingHeaderSeparator
-							)[0]
-							.split(" ")[1].length;
-						newLine = "#".repeat(realHeaderLevel) +
-							" " +
-							insertNumberStr +
-							line.substring(
-								realHeaderLevel + originNumberLength + 1
-							);
+					const originalHeading = getHeadingTextWithoutNumber(line);
+					if (!originalHeading) {
+						continue;
 					}
+					const insertNumberStr = formatHeaderNumber(
+						insertNumber,
+						config.separator,
+						originalHeading
+					);
+					const newLine = replaceHeaderNumber(
+						line,
+						insertNumberStr,
+						this.settings.autoNumberingHeaderSeparator
+					);
 
 					// Record header changes for backlink updates
 					if (newLine && newLine !== line && originalHeading) {
@@ -612,9 +585,13 @@ export default class HeaderEnhancerPlugin extends Plugin {
 					// Create updated links with new heading format
 					const updates = backlinks.map(link => {
 						const fullNewHeading = this.extractFullHeadingWithNumber(change.newText);
-						const newLink = link.oldLink.replace(
-							`#${oldHeading.trim()}`, 
-							`#${fullNewHeading}`
+						const oldFullHeading = this.extractFullHeadingWithNumber(change.oldText);
+						const newLink = [oldFullHeading, oldHeading.trim()].reduce(
+							(updatedLink, heading) => updatedLink.replace(
+								`#${heading}`,
+								`#${fullNewHeading}`
+							),
+							link.oldLink
 						);
 						return {
 							...link,
@@ -638,10 +615,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 	 * Extract plain heading text (remove # symbols and numbering)
 	 */
 	private extractHeadingText(headerLine: string): string | null {
-		// Match header line: ## [optional numbering] header text
-		// Support various numbering formats: 1.1, 1.1\t, etc.
-		const match = headerLine.match(/^#+\s*(?:\d+[\.\-\/,]*\d*\s*[\t\s]*)?\s*(.+)$/);
-		return match ? match[1].trim() : null;
+		return getHeadingTextWithoutNumber(headerLine);
 	}
 
 	/**

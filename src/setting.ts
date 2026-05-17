@@ -51,7 +51,7 @@ export const DEFAULT_SETTINGS: HeaderEnhancerSettings = {
 	showOnStatusBar: true,
 	showOnSidebar: true,
 	isAutoDetectHeaderLevel: false, // 自动检测文档中的标题层级功能
-	startHeaderLevel: 1,
+	startHeaderLevel: 2,
 	endHeaderLevel: 6,
 	autoNumberingMode: AutoNumberingMode.ON,
 	autoNumberingStartNumber: "1",

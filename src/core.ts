@@ -24,6 +24,45 @@ export function getNextNumber(
 	return nextNums;
 }
 
+function hasChineseText(text: string): boolean {
+	return /[\u4e00-\u9fff]/.test(text);
+}
+
+function toChineseNumber(num: number): string {
+	const digits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+	if (num <= 0) return num.toString();
+	if (num < 10) return digits[num];
+	if (num === 10) return "十";
+	if (num < 20) return "十" + digits[num % 10];
+	if (num < 100) {
+		const tens = Math.floor(num / 10);
+		const ones = num % 10;
+		return digits[tens] + "十" + (ones ? digits[ones] : "");
+	}
+	if (num < 1000) {
+		const hundreds = Math.floor(num / 100);
+		const rest = num % 100;
+		return digits[hundreds] + "百" + (rest ? toChineseNumber(rest) : "");
+	}
+	return num.toString();
+}
+
+export function formatHeaderNumber(
+	cntNums: number[],
+	separator: string,
+	headerText: string
+): string {
+	if (cntNums.length === 1 && hasChineseText(headerText)) {
+		return toChineseNumber(cntNums[0]) + "、";
+	}
+
+	if (hasChineseText(headerText)) {
+		return cntNums.slice(1).join(separator);
+	}
+
+	return cntNums.join(separator);
+}
+
 export function isNeedInsertNumber(text: string, splitor: string): boolean {
 	// '## header' true
 	// '## 1.1 splitor header' false
@@ -32,6 +71,10 @@ export function isNeedInsertNumber(text: string, splitor: string): boolean {
 	if (!match) return false;
 
 	const contentAfterHash = match[2];
+
+	if (stripLeadingHeaderNumber(contentAfterHash) !== contentAfterHash) {
+		return false;
+	}
 
 	if (splitor == " ") {
 		// Check if content starts with a number pattern (e.g., "1.1 text" or "1 text")
@@ -69,6 +112,38 @@ export function isNeedUpdateNumber(
 	return nextNumsStr !== cntNumsStr;
 }
 
+function stripLeadingHeaderNumber(headerText: string): string {
+	// Support generated and manually typed numbering such as:
+	// "1 Title", "1. Title", "1.1 Title", "1-1 Title", "1/1 Title", "1,1 Title".
+	// Avoid treating year-like headings such as "2024 Roadmap" as numbered headings.
+	return headerText
+		.replace(/^[一二三四五六七八九十百千]+[、.．]\s*/, "")
+		.replace(/^\d{1,3}(?:[\.\-\/,，]\d{1,3})*(?:[\.\-\/,，、\)]\s*|\s+)/, "");
+}
+
+export function getHeadingTextWithoutNumber(text: string): string | null {
+	const match = text.match(/^(#{1,6})\s+(.*)/);
+	if (!match) return null;
+
+	return stripLeadingHeaderNumber(match[2]).trim();
+}
+
+export function replaceHeaderNumber(
+	text: string,
+	nextNumsStr: string,
+	splitor: string
+): string {
+	const match = text.match(/^(#{1,6})\s+(.*)/);
+	if (!match) return text;
+
+	const sharp = match[1];
+	const header = stripLeadingHeaderNumber(match[2]).trim();
+	if (nextNumsStr.endsWith("、")) {
+		return sharp + " " + nextNumsStr + header;
+	}
+	return sharp + " " + nextNumsStr + splitor + header;
+}
+
 export function removeHeaderNumber(text: string, splitor: string): string {
 	// remove '1.1 splitor' from '## 1.1 splitor text'
 	// Extract the # symbols and content
@@ -80,9 +155,14 @@ export function removeHeaderNumber(text: string, splitor: string): string {
 
 	if (splitor == " ") {
 		// Remove number pattern at the start (e.g., "1.1 " from "1.1 header text")
-		const header = contentAfterHash.replace(/^\d+(?:\.\d+)*\s+/, '');
+		const header = stripLeadingHeaderNumber(contentAfterHash);
 		return sharp + " " + header;
 	} else {
+		const headerWithoutNumber = stripLeadingHeaderNumber(contentAfterHash);
+		if (headerWithoutNumber !== contentAfterHash) {
+			return sharp + " " + headerWithoutNumber;
+		}
+
 		// For other splitors, remove everything before and including the first splitor
 		if (!contentAfterHash.contains(splitor)) return text;
 		const parts = contentAfterHash.split(splitor);
