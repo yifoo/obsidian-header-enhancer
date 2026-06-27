@@ -10,7 +10,7 @@ const translations: { [key: string]: Translation } = {
 
 export class I18n {
     private static instance: I18n;
-    private currentLanguage: string = 'en';
+    private currentLanguage: string = 'zh';
 
     private constructor() {}
 

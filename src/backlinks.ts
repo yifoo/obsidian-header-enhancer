@@ -32,34 +32,22 @@ export class BacklinkManager {
         const updates: HeaderLinkUpdate[] = [];
         
         try {
-            // Get all backlinks for the target file
-            const backlinksMap = this.app.metadataCache.getBacklinksForFile(targetFile);
-            
-            // Check if backlinks exist
-            if (!backlinksMap) {
-                return updates;
-            }
-            
-            // Obsidian's getBacklinksForFile returns a wrapper object, actual Map is in .data property
-            let actualMap = backlinksMap;
-            if (backlinksMap.data && backlinksMap.data instanceof Map) {
-                actualMap = backlinksMap.data;
-            }
-            
-            // Check if map is empty
-            if (!actualMap || actualMap.size === 0) {
-                return updates;
-            }
+            const sourcePaths = Object.entries(this.app.metadataCache.resolvedLinks)
+                .filter(([, destinations]) => destinations[targetFile.path] > 0)
+                .map(([sourcePath]) => sourcePath);
 
-            // Iterate through all source files that reference the target file
-            for (const [sourcePath, references] of actualMap) {
-                
+            for (const sourcePath of sourcePaths) {
                 const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
                 if (!(sourceFile instanceof TFile)) continue;
 
                 // Read source file content
                 const content = await this.app.vault.read(sourceFile);
                 const lines = content.split('\n');
+                const cache = this.app.metadataCache.getFileCache(sourceFile);
+                const references = [
+                    ...(cache?.links ?? []),
+                    ...(cache?.embeds ?? [])
+                ];
 
                 // Check each reference
                 for (const ref of references) {
@@ -165,7 +153,7 @@ export class BacklinkManager {
         targetFileName: string,
         oldHeading: string
     ): HeaderLinkUpdate | null {
-        const { line, ch } = ref.position.start;
+        const { line } = ref.position.start;
         
         if (line >= lines.length) return null;
         

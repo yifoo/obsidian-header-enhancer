@@ -58,16 +58,12 @@ export function formatHeaderNumber(
 		return cntNums.join(separator);
 	}
 
-	if (isStartLevel && hasChineseText(headerText)) {
+	if (isStartLevel) {
 		return toChineseNumber(cntNums[0]) + "、";
 	}
 
-	if (isStartLevel) {
-		return cntNums.join(separator) + separator;
-	}
-
-	if (hasChineseText(headerText)) {
-		const chineseSubNumbers = cntNums.slice(1);
+	const chineseSubNumbers = cntNums.slice(1);
+	if (chineseSubNumbers.length > 0) {
 		const subNumber = chineseSubNumbers.join(separator);
 		return chineseSubNumbers.length === 1 ? subNumber + separator : subNumber;
 	}
@@ -94,7 +90,7 @@ export function isNeedInsertNumber(text: string, splitor: string): boolean {
 		return !/^\d+(?:\.\d+)*\s+/.test(contentAfterHash);
 	} else {
 		// For other splitors, check if the splitor exists in the content
-		return !contentAfterHash.contains(splitor);
+		return !contentAfterHash.includes(splitor);
 	}
 }
 
@@ -180,7 +176,7 @@ export function removeHeaderNumber(text: string, splitor: string): string {
 		}
 
 		// For other splitors, remove everything before and including the first splitor
-		if (!contentAfterHash.contains(splitor)) return text;
+		if (!contentAfterHash.includes(splitor)) return text;
 		const parts = contentAfterHash.split(splitor);
 		const header = parts.slice(1).join(splitor).trim();
 		return sharp + " " + header;
@@ -189,6 +185,19 @@ export function removeHeaderNumber(text: string, splitor: string): string {
 
 export function isHeader(text: string): boolean {
 	return /^#{1,6} .*/.test(text.trim());
+}
+
+export function updateCodeBlockState(line: string, isCodeBlock: boolean): boolean {
+	const trimmedLine = line.trimStart();
+	if (!trimmedLine.startsWith("```")) {
+		return isCodeBlock;
+	}
+
+	isCodeBlock = !isCodeBlock;
+	if (trimmedLine.slice(3).includes("```")) {
+		isCodeBlock = !isCodeBlock;
+	}
+	return isCodeBlock;
 }
 
 export interface HeaderLevelAnalysis {
@@ -207,12 +216,7 @@ export function analyzeHeaderLevels(content: string): HeaderLevelAnalysis {
 	
 	for (const line of lines) {
 		// 处理代码块（复用现有逻辑）
-		if (line.startsWith("```")) {
-			isCodeBlock = !isCodeBlock;
-			if (line.slice(3).includes("```")) {
-				isCodeBlock = !isCodeBlock;
-			}
-		}
+		isCodeBlock = updateCodeBlockState(line, isCodeBlock);
 		
 		if (isCodeBlock) continue;
 		

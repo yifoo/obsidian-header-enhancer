@@ -9,6 +9,7 @@ import {
 	getHeadingTextWithoutNumber,
 	replaceHeaderNumber,
 	formatHeaderNumber,
+	updateCodeBlockState,
 } from "./core";
 import { getAutoNumberingYaml, setAutoNumberingYaml } from "./utils";
 import {
@@ -34,6 +35,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+		I18n.getInstance().setLanguage(this.settings.language);
 		
 		// Initialize managers
 		this.backlinkManager = new BacklinkManager(this.app);
@@ -512,12 +514,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 				const line = editor.getLine(i);
 				docCharCount += line.length;
 
-				if (line.startsWith("```")) {
-					isCodeBlock = !isCodeBlock;
-					if (line.slice(3).contains("```")) {
-						isCodeBlock = !isCodeBlock;
-					}
-				}
+				isCodeBlock = updateCodeBlockState(line, isCodeBlock);
 
 				if (isCodeBlock) {
 					continue;
@@ -769,8 +766,7 @@ export default class HeaderEnhancerPlugin extends Plugin {
 				setAutoNumberingYaml(editor, value);
 			} else {
 				// YAML exists - modify state line
-				// At this point, yaml must be string[] since we've handled "" case
-				const yamlArray = yaml as string[];
+				const yamlArray = Array.isArray(yaml) ? yaml : [yaml];
 				let hasState = false;
 				const newYaml = yamlArray.map((line: string) => {
 					if (line.startsWith('state ')) {
